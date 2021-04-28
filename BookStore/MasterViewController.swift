@@ -7,13 +7,12 @@
 
 import UIKit
 
-class MasterViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
-
+class MasterViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, BookStoreDelegate {
     // MARK: - Properties
     var detailViewController: DetailedViewController? = nil
 
     @IBOutlet weak var tableView: UITableView!
-    var myBookStore = BookStore()
+    var myBookStore = BookStore();
     
     
     // MARK: - Table View
@@ -30,8 +29,34 @@ class MasterViewController: UIViewController, UITableViewDelegate, UITableViewDa
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         cell.textLabel!.text = myBookStore.bookList[indexPath.row].title
         cell.accessoryType = .disclosureIndicator
-        return cell
+        return cell	
     }
+    
+    func deleteBook(_ controller: AnyObject) {
+        if let row = tableView.indexPathForSelectedRow?.row {
+            myBookStore.bookList.remove(at: row);
+        }
+        
+        tableView.reloadData();
+        navigationController?.popToRootViewController(animated: true);
+    }
+    
+    func newBook(_ controller: AnyObject, newBook: Book) {
+        myBookStore.bookList.append(newBook);
+        tableView.reloadData();
+        navigationController?.popToRootViewController(animated: true);
+    }
+    
+    func editBook(_ controller: AnyObject, editBoook: Book) {
+        if let row = tableView.indexPathForSelectedRow?.row {
+            myBookStore.bookList[row] = editBook;
+        }
+        tableView.reloadData();
+        navigationController?.popToRootViewController(animated: true);
+    }
+    
+ 
+    
     // MARK: - Segues
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showDetail" {
@@ -39,7 +64,12 @@ class MasterViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 let selectedBook: Book = myBookStore.bookList[indexPath.row]
                 let controller = (segue.destination as! DetailedViewController)
                 controller.detailItem = selectedBook
+                controller.delegate = self;
             }
+        }
+        else if segue.identifier == "addBookSegue" {
+            let vc = segue.destination as! AddViewController;
+            vc.delegate = self;
         }
     }
 
